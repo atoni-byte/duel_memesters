@@ -1,0 +1,224 @@
+import random
+
+print("\n" * 1000)
+# COIN FLIP
+coin_sides = ['heads', 'tails']
+print(f"Coin Flip: {random.choice(coin_sides).upper()}")
+
+# DECK STORAGE
+deck1 = {}
+deck2 = {}
+
+# HAND STORAGE
+hand1 = {}
+hand2 = {}
+
+# FIELD STORAGE
+side1_MONSTERS = {}
+side2_MONSTERS = {}
+graveyard1 = {}
+graveyard2 = {}
+
+# PLAYER HP
+selected_health = input('ENTER THE AMOUNT OF HEALTH POINTS PER PLAYER (RECOMMEND 2000): ')
+player1_hp = selected_health
+player2_hp = selected_health
+
+# random card generation for testing
+for n in range(5):
+    deck1["monster" + str(n)] = [random.randint(1, 10) * 100, random.randint(1, 10) * 100, "EFFECT: poop"]
+    deck2["monster" + str(n)] = [random.randint(1, 10) * 100, random.randint(1, 10) * 100, "EFFECT: boob"]
+
+
+def viewhand(hand, side):
+    print(f'Viewing Hand {side}:\n{hand}\n\n')
+
+
+def viewfield():
+    print(f'Viewing Side 1:\n{side1_MONSTERS}\nViewing Side 2:\n{side2_MONSTERS}\n\n')
+
+
+def clear():
+    print("\n" * 1000)
+
+
+def help():
+    print(f'commands: drawx, viewdeckx, viewhandx, atkposx, defposx, clear, viewfield, attackx\n\n')
+
+
+# view the cards in the hand
+def hand(hand):
+    print(f'{hand}\n\n')
+
+
+# draw card function
+def draw(deck, hand, side):
+    # get random card
+    print(f'Card drawn from deck {side}...')
+    random_monster = random.choice(list(deck))
+    x = str(random_monster) + str(deck.get(random_monster))
+    x = x.replace("[", ", ")
+    x = x.replace("]", " ")
+    x = x.replace("'", '')
+    print(f'{x}\n\n')
+    # place card in hand
+    hand[random_monster] = deck.get(random_monster)
+    # remove card from deck
+    del deck[random_monster]
+
+
+# view the cards inside the deck
+def viewdeck(deck, side):
+    print(f'Viewing deck {side}:\n{deck}\n\n')
+
+
+def place_MONSTER_ATK_POS(sidex_MONSTERS, monster, hand, side):
+    sidex_MONSTERS[monster] = hand.get(monster)
+    sidex_MONSTERS[monster].append('ATTACK')
+    print(f"Monsters on side {side}:\n{sidex_MONSTERS}\n\n")
+
+
+def place_MONSTER_DEF_POS(sidex_MONSTERS, monster, hand, side):
+    sidex_MONSTERS[monster] = hand.get(monster)
+    sidex_MONSTERS[monster].append('DEFENSE')
+    print(f"Monsters on side {side}:\n{sidex_MONSTERS}\n\n")
+
+
+def move_to_Graveyard(destroyed_monster, side, graveyard):
+    graveyard[destroyed_monster] = side.get(destroyed_monster)
+    side.pop(destroyed_monster)
+
+
+def attack(attacking_monster, attacked_monster, side, opposite_side, player1_hp, player2_hp):
+    damage_points = 0
+    attack_points = 0
+    defense_points = 1
+    attacking_monster = side.get(attacking_monster)
+    attacked_monster = opposite_side.get(attacked_monster)
+    if attacked_monster[-1] == 'ATTACK':
+        if attacking_monster[attack_points] > attacked_monster[attack_points]:
+            damage_points = attacking_monster[attack_points] - attacked_monster[attack_points]
+            destroyed_monster = attacked_monster
+            move_to_Graveyard(destroyed_monster, side2_MONSTERS, graveyard2)
+            player2_hp -= damage_points
+            print(f"Player {side} has taken {damage_points} damage.\nPlayer {side} HP: {player2_hp}\n")
+        else:
+            damage_points = attacked_monster[attack_points] - attacking_monster[attack_points]
+            destroyed_monster = attacking_monster
+            move_to_Graveyard(destroyed_monster, side1_MONSTERS, graveyard1)
+            player1_hp -= damage_points
+            print(f"Player {side} has taken {damage_points} damage.\nPlayer 2 HP: {player1_hp}\n")
+    else:
+        if attacking_monster[attack_points] > attacked_monster[defense_points]:
+            destroyed_monster = attacked_monster
+            move_to_Graveyard(destroyed_monster, side2_MONSTERS, graveyard2)
+        else:
+            damage_points = attacked_monster[attack_points] - attacking_monster[attack_points]
+            destroyed_monster = attacking_monster
+            move_to_Graveyard(destroyed_monster, side1_MONSTERS, graveyard1)
+            player1_hp -= damage_points
+            print(f"Player {side} has taken {damage_points} damage.\nPlayer {side} HP: {player1_hp}\n")
+    print(destroyed_monster)
+
+
+print("\n" * 100)
+# GAME COMMANDS
+while True:
+    command = input(">>> ")
+    command = command.lower().strip()
+
+    # HELP COMMAND
+    if command == 'help':
+        help()
+
+    # CLEAR COMMAND
+    if command == 'clear':
+        clear()
+
+    # DRAW COMMAND
+    if command == 'draw1':
+        draw(deck1, hand1, '1')
+    if command == 'draw2':
+        draw(deck2, hand2, '2')
+
+    # VIEWDECK COMMAND
+    if command == 'viewdeck1':
+        viewdeck(deck1, '1')
+    if command == 'viewdeck2':
+        viewdeck(deck2, '2')
+
+    # VIEWHAND COMMAND
+    if command == 'viewhand1':
+        viewhand(hand1, '1')
+    if command == 'viewhand2':
+        viewhand(hand2, '2')
+
+    # VIEWFIELD COMMAND
+    if command == 'viewfield':
+        viewfield()
+
+    # PLACE ATTACK POSITION COMMAND
+    if command == 'atkpos1':
+        selected_monster = input('Select Monster: ')
+        if selected_monster in hand1.keys():
+            side = '1'
+            place_MONSTER_ATK_POS(side1_MONSTERS, selected_monster, hand1, side)
+        else:
+            continue
+    if command == 'atkpos2':
+        selected_monster = input('Select Monster: ')
+        if selected_monster in hand2.keys():
+            side = '2'
+            place_MONSTER_ATK_POS(side2_MONSTERS, selected_monster, hand2, side)
+        else:
+            continue
+
+    # PLACE DEFENSE POSITION COMMAND
+    if command == 'defpos1':
+        selected_monster = input('Selected Monster: ')
+        if selected_monster in hand1.keys():
+            side = '1'
+            place_MONSTER_DEF_POS(side1_MONSTERS, selected_monster, hand1, side)
+        else:
+            continue
+
+    if command == 'defpos2':
+        selected_monster = input('Selected Monster: ')
+        if selected_monster in hand2.keys():
+            side = '2'
+            place_MONSTER_DEF_POS(side2_MONSTERS, selected_monster, hand2, side)
+        else:
+            continue
+
+    # CREATE ATTACK COMMAND
+    if command == 'attack1':
+        side = side1_MONSTERS
+        opposite_side = side2_MONSTERS
+        attacking_monster = input('Enter Monster To Attack With: ')
+        if attacking_monster in side1_MONSTERS.keys() and hand1[attacking_monster][-1] == 'ATTACK':
+            print('YOU CAN ATTACK WITH THIS MONSTER')
+            attacked_monster = input('Choose Monster to Attack: ')
+            if attacked_monster in side2_MONSTERS.keys():
+                print('THIS MONSTER CAN BE ATTACKED')
+                attack(attacking_monster, attacked_monster, side, opposite_side, player1_hp, player2_hp)
+            else:
+                continue
+        else:
+            continue
+
+    if command == 'attack2':
+        side = side2_MONSTERS
+        opposite_side = side1_MONSTERS
+        attacking_monster = input('Enter Monster To Attack With: ')
+        if attacking_monster in side2_MONSTERS.keys() and hand2[attacking_monster][-1] == 'ATTACK':
+            print('YOU CAN ATTACK WITH THIS MONSTER')
+            attacked_monster = input('Choose Monster to Attack: ')
+            if attacked_monster in side1_MONSTERS.keys():
+                print('THIS MONSTER CAN BE ATTACKED')
+                attack(attacking_monster, attacked_monster, side, opposite_side, player1_hp, player2_hp)
+            else:
+                continue
+        else:
+            continue
+    else:
+        continue
